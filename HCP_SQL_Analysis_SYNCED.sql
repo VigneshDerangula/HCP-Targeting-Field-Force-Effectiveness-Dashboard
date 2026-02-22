@@ -10,7 +10,7 @@
 -- ║  Tier A Rev Share: 56.1%  |  Tier A SPC = 1.9x Tier C                 ║
 -- ║  Pareto          : 65% of HCPs → 80% of revenue                    ║
 -- ╠══════════════════════════════════════════════════════════════════════════╣
--- ║  ✅ All expected results in comments match Python notebook & HTML dash  ║
+-- ║   All expected results in comments match Python notebook & HTML dash  ║
 -- ╚══════════════════════════════════════════════════════════════════════════╝
 
 -- HOW TO USE
@@ -175,20 +175,20 @@ With_Prev AS (
 )
 SELECT *,
     CASE
-        WHEN MoM_Growth_Pct > 10  THEN '🟢 Strong'
-        WHEN MoM_Growth_Pct > 0   THEN '🟡 Moderate'
-        WHEN MoM_Growth_Pct IS NULL THEN '— First month'
-        ELSE                           '🔴 Decline'
+        WHEN MoM_Growth_Pct > 10  THEN 'Strong'
+        WHEN MoM_Growth_Pct > 0   THEN 'Moderate'
+        WHEN MoM_Growth_Pct IS NULL THEN 'First month'
+        ELSE                           'Decline'
     END AS Signal
 FROM With_Prev ORDER BY Year, Month_Num;
 
 -- Expected result (verified against master dataset):
 --   2024 | Mar | 3 | 292700.0 | None | None | — First month
---   2024 | Apr | 4 | 299500.0 | 292700.0 | 2.3 | 🟡 Moderate
---   2024 | May | 5 | 292400.0 | 299500.0 | -2.4 | 🔴 Decline
---   2024 | Jun | 6 | 288800.0 | 292400.0 | -1.2 | 🔴 Decline
---   2024 | Jul | 7 | 301800.0 | 288800.0 | 4.5 | 🟡 Moderate
---   2024 | Aug | 8 | 299100.0 | 301800.0 | -0.9 | 🔴 Decline
+--   2024 | Apr | 4 | 299500.0 | 292700.0 | 2.3 | Moderate
+--   2024 | May | 5 | 292400.0 | 299500.0 | -2.4 | Decline
+--   2024 | Jun | 6 | 288800.0 | 292400.0 | -1.2 | Decline
+--   2024 | Jul | 7 | 301800.0 | 288800.0 | 4.5 | Moderate
+--   2024 | Aug | 8 | 299100.0 | 301800.0 | -0.9 | Decline
 
 -- ────────────────────────────────────────────────────────────────────────
 
@@ -295,7 +295,7 @@ SELECT
     ROUND(Total_Sales*100.0/Grand_Total, 1)         AS Revenue_Share_Pct,
     ROUND(Running_Total*100.0/Grand_Total, 1)       AS Cumulative_Pct,
     CASE WHEN Running_Total*100.0/Grand_Total <= 80
-         THEN '✅ Core 80%' ELSE '—' END            AS Pareto_Flag
+         THEN 'Core 80%' ELSE '—' END            AS Pareto_Flag
 FROM Ranked ORDER BY Total_Sales DESC LIMIT 20;
 
 -- Expected result (verified against master dataset):
@@ -325,7 +325,7 @@ SELECT h.HCP_Name, h.Tier, h.Decile, h.Specialty,
        h.Territory_Name, h.Rep_Name, h.Total_Calls,
        ROUND(a.Avg_Calls,1)                                              AS Benchmark_Calls,
        ROUND((a.Avg_Calls-h.Total_Calls)*100.0/NULLIF(a.Avg_Calls,0),1) AS Call_Gap_Pct,
-       h.Total_Sales, '⚡ Opportunity' AS Flag
+       h.Total_Sales, 'Opportunity' AS Flag
 FROM HCP_Calls h, Avg a
 WHERE h.Decile >= 7 AND h.Total_Calls < a.Avg_Calls * 0.75
 ORDER BY h.Decile DESC, h.Total_Calls ASC LIMIT 15;
@@ -457,7 +457,7 @@ FROM Ter ORDER BY Rank;
 --   2 | Delhi | North | 874100.0 | 24.9 | 🥈 Second
 --   3 | Kolkata | East | 737700.0 | 21.0 | ─
 --   4 | Chennai | South | 633200.0 | 18.0 | ─
---   5 | Bengaluru | South | 388100.0 | 11.1 | 🔴 Needs Focus
+--   5 | Bengaluru | South | 388100.0 | 11.1 | Needs Focus
 
 -- ────────────────────────────────────────────────────────────────────────
 
@@ -548,18 +548,18 @@ SELECT
     ROUND((rs.Total_Sales-a.Avg_Sales)*100.0
           /NULLIF(a.Avg_Sales,0), 1)                    AS Sales_Lift_Pct,
     CASE
-        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >= 20 THEN '🌟 Star'
-        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >= 0  THEN '✅ Above Avg'
-        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >=-15 THEN '⚠️ Below Avg'
-        ELSE '🔴 Coach' END                             AS Performance_Band
+        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >= 20 THEN ' Star'
+        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >= 0  THEN ' Above Avg'
+        WHEN (rs.Total_Sales-a.Avg_Sales)*100.0/a.Avg_Sales >=-15 THEN ' Below Avg'
+        ELSE ' Coach' END                             AS Performance_Band
 FROM Rep_Sales rs, Avg a ORDER BY Sales_Lift_Pct DESC;
 
 -- Expected result (verified against master dataset):
---   1 | K. Sharma | Mumbai | 879000.0 | 702420.0 | 25.1 | 🌟 Star
---   2 | P. Iyer | Delhi | 874100.0 | 702420.0 | 24.4 | 🌟 Star
---   3 | S. Gupta | Kolkata | 737700.0 | 702420.0 | 5.0 | ✅ Above Avg
---   4 | R. Nair | Chennai | 633200.0 | 702420.0 | -9.9 | ⚠️ Below Avg
---   5 | M. Patel | Bengaluru | 388100.0 | 702420.0 | -44.7 | 🔴 Coach
+--   1 | K. Sharma | Mumbai | 879000.0 | 702420.0 | 25.1 | Star
+--   2 | P. Iyer | Delhi | 874100.0 | 702420.0 | 24.4 | Star
+--   3 | S. Gupta | Kolkata | 737700.0 | 702420.0 | 5.0 |  Above Avg
+--   4 | R. Nair | Chennai | 633200.0 | 702420.0 | -9.9 |  Below Avg
+--   5 | M. Patel | Bengaluru | 388100.0 | 702420.0 | -44.7 |  Coach
 
 -- ────────────────────────────────────────────────────────────────────────
 
@@ -606,20 +606,20 @@ WITH Rep_Monthly AS (
     GROUP BY r.Rep_Name, dd.Year, dd.Month_Num, dd.Month_Name
 )
 SELECT *, CASE
-    WHEN Gap_Pct >= 10  THEN '🟢 Strong Beat'
-    WHEN Gap_Pct >=  0  THEN '✅ On Target'
-    WHEN Gap_Pct >= -10 THEN '🟡 Slight Miss'
-    ELSE                     '🔴 Significant Miss'
+    WHEN Gap_Pct >= 10  THEN 'Strong Beat'
+    WHEN Gap_Pct >=  0  THEN 'On Target'
+    WHEN Gap_Pct >= -10 THEN 'Slight Miss'
+    ELSE                     'Significant Miss'
 END AS Status
 FROM Rep_Monthly ORDER BY Rep_Name, Year, Month_Num;
 
 -- Expected result (verified against master dataset):
---   K. Sharma | 2024 | 3 | Mar | 75000.0 | 82800.0 | -7800.0 | -9.4 | 🟡 Slight Miss
---   K. Sharma | 2024 | 4 | Apr | 75300.0 | 82800.0 | -7500.0 | -9.1 | 🟡 Slight Miss
---   K. Sharma | 2024 | 5 | May | 71400.0 | 82800.0 | -11400.0 | -13.8 | 🔴 Significant Miss
---   K. Sharma | 2024 | 6 | Jun | 74000.0 | 82800.0 | -8800.0 | -10.6 | 🔴 Significant Miss
---   K. Sharma | 2024 | 7 | Jul | 73800.0 | 82800.0 | -9000.0 | -10.9 | 🔴 Significant Miss
---   K. Sharma | 2024 | 8 | Aug | 74600.0 | 82800.0 | -8200.0 | -9.9 | 🟡 Slight Miss
+--   K. Sharma | 2024 | 3 | Mar | 75000.0 | 82800.0 | -7800.0 | -9.4 | Slight Miss
+--   K. Sharma | 2024 | 4 | Apr | 75300.0 | 82800.0 | -7500.0 | -9.1 | Slight Miss
+--   K. Sharma | 2024 | 5 | May | 71400.0 | 82800.0 | -11400.0 | -13.8 | Significant Miss
+--   K. Sharma | 2024 | 6 | Jun | 74000.0 | 82800.0 | -8800.0 | -10.6 |  Significant Miss
+--   K. Sharma | 2024 | 7 | Jul | 73800.0 | 82800.0 | -9000.0 | -10.9 |  Significant Miss
+--   K. Sharma | 2024 | 8 | Aug | 74600.0 | 82800.0 | -8200.0 | -9.9 |  Slight Miss
 
 -- ────────────────────────────────────────────────────────────────────────
 
@@ -728,10 +728,10 @@ SELECT HCP_Name, Tier, Specialty, Territory_Name, Total_Sales,
     ROUND(PERCENT_RANK() OVER (ORDER BY Total_Sales)*100,1) AS Percentile,
     NTILE(4) OVER (ORDER BY Total_Sales DESC)               AS Quartile,
     CASE NTILE(4) OVER (ORDER BY Total_Sales DESC)
-        WHEN 1 THEN '🏆 Q1 — Top 25%'
-        WHEN 2 THEN '🟢 Q2 — Upper Mid'
-        WHEN 3 THEN '🟡 Q3 — Lower Mid'
-        WHEN 4 THEN '🔴 Q4 — Bottom 25%'
+        WHEN 1 THEN ' Q1 — Top 25%'
+        WHEN 2 THEN ' Q2 — Upper Mid'
+        WHEN 3 THEN ' Q3 — Lower Mid'
+        WHEN 4 THEN ' Q4 — Bottom 25%'
     END AS Quartile_Label
 FROM HCP_Sales ORDER BY Total_Sales DESC LIMIT 20;
 
@@ -761,22 +761,22 @@ Medians AS (
 SELECT s.HCP_Name, s.Tier, s.Territory_Name, s.Total_Sales, s.Total_Calls,
     CASE
         WHEN s.Total_Calls >= m.Med_Calls AND s.Total_Sales >= m.Med_Sales
-             THEN '⭐ Star       — High Calls, High Sales'
+             THEN ' Star       — High Calls, High Sales'
         WHEN s.Total_Calls <  m.Med_Calls AND s.Total_Sales >= m.Med_Sales
-             THEN '⚡ Opportunity — Low Calls, High Sales'
+             THEN ' Opportunity — Low Calls, High Sales'
         WHEN s.Total_Calls >= m.Med_Calls AND s.Total_Sales <  m.Med_Sales
-             THEN '⚠️ Inefficient — High Calls, Low Sales'
-        ELSE     '🔴 At Risk     — Low Calls, Low Sales'
+             THEN '️ Inefficient — High Calls, Low Sales'
+        ELSE     ' At Risk     — Low Calls, Low Sales'
     END AS Quadrant
 FROM HCP_Stats s, Medians m ORDER BY s.Total_Sales DESC;
 
 -- Expected result (verified against master dataset):
---   Dr. HCP-043 | A | Chennai | 11167000.0 | 1560 | ⭐ Star       — High Calls, High Sales
---   Dr. HCP-055 | A | Mumbai | 11028800.0 | 1464 | ⭐ Star       — High Calls, High Sales
---   Dr. HCP-010 | A | Chennai | 10764000.0 | 1380 | ⭐ Star       — High Calls, High Sales
---   Dr. HCP-019 | A | Mumbai | 10725000.0 | 1500 | ⭐ Star       — High Calls, High Sales
---   Dr. HCP-040 | A | Kolkata | 10556000.0 | 1392 | ⭐ Star       — High Calls, High Sales
---   Dr. HCP-035 | A | Kolkata | 10465000.0 | 1380 | ⭐ Star       — High Calls, High Sales
+--   Dr. HCP-043 | A | Chennai | 11167000.0 | 1560 |  Star       — High Calls, High Sales
+--   Dr. HCP-055 | A | Mumbai | 11028800.0 | 1464 |  Star       — High Calls, High Sales
+--   Dr. HCP-010 | A | Chennai | 10764000.0 | 1380 |  Star       — High Calls, High Sales
+--   Dr. HCP-019 | A | Mumbai | 10725000.0 | 1500 |  Star       — High Calls, High Sales
+--   Dr. HCP-040 | A | Kolkata | 10556000.0 | 1392 |  Star       — High Calls, High Sales
+--   Dr. HCP-035 | A | Kolkata | 10465000.0 | 1380 |  Star       — High Calls, High Sales
 
 -- ────────────────────────────────────────────────────────────────────────
 
@@ -796,10 +796,10 @@ WITH HCP_Active AS (
 Total_Months AS (SELECT COUNT(DISTINCT Date_ID) AS N FROM Fact_Sales)
 SELECT
     CASE
-        WHEN ha.Active_Months = tm.N          THEN '🟢 Always Active (all 12 months)'
-        WHEN ha.Active_Months >= tm.N*0.75    THEN '🟡 Mostly Active (≥9 months)'
-        WHEN ha.Active_Months >= tm.N*0.50    THEN '🟠 Intermittent (6–8 months)'
-        ELSE                                       '🔴 Sporadic (<6 months)'
+        WHEN ha.Active_Months = tm.N          THEN ' Always Active (all 12 months)'
+        WHEN ha.Active_Months >= tm.N*0.75    THEN ' Mostly Active (≥9 months)'
+        WHEN ha.Active_Months >= tm.N*0.50    THEN ' Intermittent (6–8 months)'
+        ELSE                                       ' Sporadic (<6 months)'
     END AS Activity_Segment,
     COUNT(*)                          AS HCP_Count,
     ROUND(AVG(ha.Active_Months),1)    AS Avg_Active_Months,
@@ -808,7 +808,7 @@ FROM HCP_Active ha, Total_Months tm
 GROUP BY Activity_Segment ORDER BY Avg_Total_Sales DESC;
 
 -- Expected result (verified against master dataset):
---   🟢 Always Active (all 12 months) | 60 | 12.0 | 58535.0
+--    Always Active (all 12 months) | 60 | 12.0 | 58535.0
 
 -- ────────────────────────────────────────────────────────────────────────
 
