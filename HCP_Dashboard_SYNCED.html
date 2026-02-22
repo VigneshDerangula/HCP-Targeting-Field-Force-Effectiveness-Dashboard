@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCP Targeting & Field Force Effectiveness</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#21262d;
+  --accent:#00d4aa;--accent2:#4d9eff;--accent3:#ff6b6b;--accent4:#ffd93d;
+  --text:#e6edf3;--muted:#7d8590;--green:#2ea043;--red:#f85149;--purple:#a371f7;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+.header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)}
+.header-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.live-badge{background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);color:var(--accent);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.filters-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;outline:none}
+select:hover{border-color:var(--accent)}
+.filter-group{display:flex;align-items:center;gap:6px}
+.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.kpi-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.kpi-card.green::before{background:var(--accent)}
+.kpi-card.blue::before{background:var(--accent2)}
+.kpi-card.red::before{background:var(--accent3)}
+.kpi-card.yellow::before{background:var(--accent4)}
+.kpi-card.purple::before{background:var(--purple)}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.kpi-value{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;margin:6px 0 4px}
+.kpi-delta{font-size:11px;font-weight:600}
+.kpi-delta.up{color:var(--green)}.kpi-delta.down{color:var(--red)}
+.kpi-icon{position:absolute;right:14px;top:14px;font-size:18px;opacity:.3}
+.charts-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.chart-subtitle{font-size:10px;color:var(--muted);margin-bottom:14px}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.table-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.table-search{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;width:200px}
+table.detail{width:100%;border-collapse:collapse}
+table.detail thead th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 10px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600}
+table.detail tbody tr{border-bottom:1px solid rgba(33,38,45,.8);transition:background .15s}
+table.detail tbody tr:hover{background:var(--surface2)}
+table.detail tbody td{padding:8px 10px;font-size:12px}
+.badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.badge-a{background:rgba(0,212,170,.15);color:var(--accent)}
+.badge-b{background:rgba(77,158,255,.15);color:var(--accent2)}
+.badge-c{background:rgba(255,217,61,.15);color:var(--accent4)}
+.lift-pos{color:var(--green);font-family:'Space Mono',monospace;font-size:11px}
+.lift-neg{color:var(--red);font-family:'Space Mono',monospace;font-size:11px}
+.dec-up{color:var(--green)}.dec-down{color:var(--red)}.dec-same{color:var(--muted)}
+.tier-row{display:flex;gap:4px;height:26px;border-radius:4px;overflow:hidden;margin:10px 0 6px}
+.tier-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;transition:flex .5s ease}
+.tier-a{background:var(--accent)}.tier-b{background:var(--accent2)}.tier-c{background:var(--accent4)}
+.tier-legend{display:flex;gap:10px;margin-top:8px}
+.tier-legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
+.tier-dot{width:8px;height:8px;border-radius:50%}
+.rep-rows{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.rep-row{display:flex;align-items:center;gap:8px}
+.rep-name{font-size:10px;color:var(--muted);width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rep-bar-track{flex:1;height:14px;background:var(--surface2);border-radius:3px;overflow:hidden;position:relative}
+.rep-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:700;color:#000}
+.rep-pct{font-size:10px;font-family:'Space Mono',monospace;color:var(--text);width:42px;text-align:right}
+.heatmap-table{width:100%;border-collapse:collapse;margin-top:10px}
+.heatmap-table th{font-size:9px;color:var(--muted);text-transform:uppercase;padding:4px 8px;text-align:center;font-weight:600}
+.heatmap-table td{padding:6px 8px;text-align:center;font-size:11px;border-radius:4px;cursor:pointer}
+.heatmap-table .row-label{text-align:left;color:var(--muted);font-size:10px;background:transparent!important}
+.scatter-area{position:relative;height:160px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);margin:10px 8px 20px 30px}
+.scatter-dot{position:absolute;border-radius:50%;transform:translate(-50%,50%);cursor:pointer;transition:transform .2s;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(0,0,0,.7)}
+.scatter-dot:hover{transform:translate(-50%,50%) scale(1.3)}
+.scatter-y-label{position:absolute;left:-28px;font-size:9px;color:var(--muted);transform:rotate(-90deg);top:50%}
+.axis-label-x{text-align:center;font-size:9px;color:var(--muted);margin-top:4px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">HCP TARGETING & FIELD FORCE EFFECTIVENESS</div>
+    <div class="header-sub">Executive Commercial Overview · Power BI Dashboard Simulation</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="live-badge">● LIVE</div>
+    <div style="font-size:11px;color:var(--muted)">Mar 2024 – Feb 2025 · FY</div>
+  </div>
+</div>
+
+<div class="filters-bar">
+  <span class="filter-label">Filters:</span>
+  <div class="filter-group"><span class="filter-label">Date</span>
+    <select><option>All Months</option><option>Q1 2024</option><option>Q2 2024</option><option>Q3 2024</option><option>Q4 2024</option></select></div>
+  <div class="filter-group"><span class="filter-label">Region</span>
+    <select><option>All Regions</option><option>North</option><option>South</option><option>West</option><option>East</option></select></div>
+  <div class="filter-group"><span class="filter-label">Territory</span>
+    <select><option>All Territories</option><option>Mumbai</option><option>Delhi</option><option>Bengaluru</option><option>Chennai</option><option>Kolkata</option></select></div>
+  <div class="filter-group"><span class="filter-label">Rep</span>
+    <select><option>All Reps</option><option>K. Sharma</option><option>P. Iyer</option><option>M. Patel</option><option>R. Nair</option><option>S. Gupta</option></select></div>
+  <div class="filter-group"><span class="filter-label">Tier</span>
+    <select><option>All Tiers</option><option>Tier A</option><option>Tier B</option><option>Tier C</option></select></div>
+</div>
+
+<div class="main">
+  <!-- KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kpi-card green"><div class="kpi-icon">💊</div>
+      <div class="kpi-label">Total Sales</div>
+      <div class="kpi-value" style="color:var(--accent)">₹3.51M</div>
+      <div class="kpi-delta up">▲ 90.6% of Target</div></div>
+    <div class="kpi-card blue"><div class="kpi-icon">📞</div>
+      <div class="kpi-label">Call Reach %</div>
+      <div class="kpi-value" style="color:var(--accent2)">72.0%</div>
+      <div class="kpi-delta up">▲ 3,763 of 5,225 calls</div></div>
+    <div class="kpi-card yellow"><div class="kpi-icon">🔁</div>
+      <div class="kpi-label">Call Frequency</div>
+      <div class="kpi-value" style="color:var(--accent4)">7.26x</div>
+      <div class="kpi-delta up">▲ calls/HCP/month</div></div>
+    <div class="kpi-card purple"><div class="kpi-icon">📈</div>
+      <div class="kpi-label">Adoption Rate</div>
+      <div class="kpi-value" style="color:var(--purple)">100.0%</div>
+      <div class="kpi-delta up">▲ 60 active HCPs</div></div>
+    <div class="kpi-card red"><div class="kpi-icon">💰</div>
+      <div class="kpi-label">Sales per Call</div>
+      <div class="kpi-value" style="color:var(--accent3)">₹672</div>
+      <div class="kpi-delta up">▲ Tier A = 1.9x vs Tier C</div></div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="charts-row">
+    <!-- Combo Chart -->
+    <div class="chart-card">
+      <div class="chart-title">📈 Sales vs Calls Monthly Trend</div>
+      <div class="chart-subtitle">Columns = Calls · Line = Net Sales</div>
+      <div style="position:relative;height:160px">
+        <svg id="combo" width="100%" height="100%" viewBox="0 0 600 160" preserveAspectRatio="none">
+          <line x1="0" y1="40" x2="600" y2="40" stroke="#21262d" stroke-width="1"/>
+          <line x1="0" y1="80" x2="600" y2="80" stroke="#21262d" stroke-width="1"/>
+          <line x1="0" y1="120" x2="600" y2="120" stroke="#21262d" stroke-width="1"/>
+        </svg>
+      </div>
+      <div id="mo-labels" style="display:flex;justify-content:space-around;font-size:9px;color:var(--muted);margin-top:4px"></div>
+      <div style="display:flex;gap:16px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)"><div style="width:12px;height:12px;border-radius:2px;background:rgba(77,158,255,.5)"></div>Total Calls</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)"><div style="width:12px;height:3px;background:var(--accent);border-radius:2px"></div>Net Sales</div>
+      </div>
+    </div>
+
+    <!-- Tier Distribution -->
+    <div class="chart-card">
+      <div class="chart-title">🎯 Tier Distribution</div>
+      <div class="chart-subtitle">60 HCPs across 5 territories</div>
+      <div class="tier-row">
+        <div class="tier-seg tier-a" style="flex:38.3">A</div>
+        <div class="tier-seg tier-b" style="flex:33.3">B</div>
+        <div class="tier-seg tier-c" style="flex:28.3">C</div>
+      </div>
+      <div class="tier-legend">
+        <div class="tier-legend-item"><div class="tier-dot" style="background:var(--accent)"></div>A · 38.3% (23)</div>
+        <div class="tier-legend-item"><div class="tier-dot" style="background:var(--accent2)"></div>B · 33.3% (20)</div>
+        <div class="tier-legend-item"><div class="tier-dot" style="background:var(--accent4)"></div>C · 28.3% (17)</div>
+      </div>
+      <div style="margin-top:14px;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Territory Tier-A Share</div>
+      <div id="ter-bars"></div>
+    </div>
+
+    <!-- Rep Lift -->
+    <div class="chart-card">
+      <div class="chart-title">📊 Sales Lift % by Rep</div>
+      <div class="chart-subtitle">vs. average rep performance</div>
+      <div class="rep-rows" id="rep-rows"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+    <!-- Heatmap -->
+    <div class="chart-card">
+      <div class="chart-title">🔥 Territory KPI Heatmap</div>
+      <div class="chart-subtitle">Territory × KPI matrix · Green = strong · Red = weak</div>
+      <table class="heatmap-table">
+        <thead><tr><th></th><th>Reach %</th><th>Growth %</th><th>Adoption %</th><th>Call Freq</th></tr></thead>
+        <tbody id="heatmap-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Scatter -->
+    <div class="chart-card">
+      <div class="chart-title">📍 Calls vs Sales Scatter</div>
+      <div class="chart-subtitle">Bubble size = # HCPs · Colour = reach rate</div>
+      <div style="position:relative">
+        <div class="scatter-area" id="scatter"><div class="scatter-y-label">Sales →</div></div>
+        <div class="axis-label-x">← Calls</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap" id="scatter-legend"></div>
+    </div>
+  </div>
+
+  <!-- HCP TABLE -->
+  <div class="table-section">
+    <div class="table-header">
+      <div>
+        <div class="chart-title">📋 HCP Detail Drilldown</div>
+        <div class="chart-subtitle">Top 10 HCPs by net sales · All KPIs from master dataset</div>
+      </div>
+      <input class="table-search" type="text" placeholder="🔍 Search HCP / Specialty..." oninput="filterTable(this.value)">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="detail" id="hcp-table">
+        <thead><tr>
+          <th>HCP Name</th><th>Specialty</th><th>Territory</th><th>Rep</th>
+          <th>Tier</th><th>Total Calls</th><th>Net Sales (₹)</th><th>Lift %</th><th>Decile Δ</th>
+        </tr></thead>
+        <tbody id="hcp-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── MASTER DATA from Python ──────────────────────────────────────────────────
+const MASTER = {"total_sales": 3512100.0, "total_target": 3876000.0, "total_calls": 5225, "reached_calls": 3763, "call_reach_pct": 72.0, "call_freq": 7.26, "adoption_rate": 100.0, "sales_per_call": 672.0, "target_ach": 90.6, "n_hcps": 60, "n_tier_a": 23, "n_tier_b": 20, "n_tier_c": 17, "tier_a_pct": 38.3, "tier_b_pct": 33.3, "tier_c_pct": 28.3, "tier_a_sales": 1972000.0, "tier_a_sales_pct": 56.1, "pareto_pct": 65, "tier_a_spc": 769.0, "tier_c_spc": 407.0, "spc_ratio": 1.9};
+const MO_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MO_CALLS  = [443, 460, 459, 455, 444, 403, 401, 414, 435, 434, 396, 481];
+const MO_SALES  = [289400, 286000, 292700, 299500, 292400, 288800, 301800, 299100, 303700, 283400, 283200, 292100];
+const TER_KPI   = [{"Territory":"Mumbai","Sales":879000.0,"Calls":1383,"Reach_Pct":71.4,"HCPs":16},{"Territory":"Delhi","Sales":874100.0,"Calls":1483,"Reach_Pct":72.2,"HCPs":18},{"Territory":"Kolkata","Sales":737700.0,"Calls":998,"Reach_Pct":71.7,"HCPs":11},{"Territory":"Chennai","Sales":633200.0,"Calls":830,"Reach_Pct":73.7,"HCPs":8},{"Territory":"Bengaluru","Sales":388100.0,"Calls":531,"Reach_Pct":71.0,"HCPs":7}];
+const REP_KPI   = [{"Rep_Name":"K. Sharma","Sales":879000.0,"Sales_Lift":25.1},{"Rep_Name":"P. Iyer","Sales":874100.0,"Sales_Lift":24.4},{"Rep_Name":"S. Gupta","Sales":737700.0,"Sales_Lift":5.0},{"Rep_Name":"R. Nair","Sales":633200.0,"Sales_Lift":-9.9},{"Rep_Name":"M. Patel","Sales":388100.0,"Sales_Lift":-44.7}];
+const HMAP_DATA = [{"t": "Mumbai", "reach": 71.4, "growth": 6.3, "adoption": 26.7, "freq": 7.2}, {"t": "Delhi", "reach": 72.2, "growth": 21.4, "adoption": 30.0, "freq": 6.87}, {"t": "Kolkata", "reach": 71.7, "growth": 9.1, "adoption": 18.3, "freq": 7.56}, {"t": "Chennai", "reach": 73.7, "growth": 13.8, "adoption": 13.3, "freq": 8.65}, {"t": "Bengaluru", "reach": 71.0, "growth": 18.2, "adoption": 11.7, "freq": 6.32}];
+const SCATTER_D = [{"name": "Mumbai", "calls": 1383, "sales": 879000, "hcps": 16, "reach": 71.4}, {"name": "Delhi", "calls": 1483, "sales": 874100, "hcps": 18, "reach": 72.2}, {"name": "Kolkata", "calls": 998, "sales": 737700, "hcps": 11, "reach": 71.7}, {"name": "Chennai", "calls": 830, "sales": 633200, "hcps": 8, "reach": 73.7}, {"name": "Bengaluru", "calls": 531, "sales": 388100, "hcps": 7, "reach": 71.0}];
+const HCP_DATA  = [{"name": "Dr. HCP-021", "spec": "Cardiologist", "terr": "Mumbai", "rep": "K. Sharma", "tier": "A", "calls": 85, "sales": 96300, "lift": 64.5, "decile": "0"}, {"name": "Dr. HCP-010", "spec": "Pulmonologist", "terr": "Chennai", "rep": "R. Nair", "tier": "A", "calls": 115, "sales": 93600, "lift": 59.9, "decile": "0"}, {"name": "Dr. HCP-040", "spec": "Pulmonologist", "terr": "Kolkata", "rep": "S. Gupta", "tier": "A", "calls": 116, "sales": 91000, "lift": 55.5, "decile": "+1"}, {"name": "Dr. HCP-035", "spec": "Pulmonologist", "terr": "Kolkata", "rep": "S. Gupta", "tier": "A", "calls": 115, "sales": 91000, "lift": 55.5, "decile": "+1"}, {"name": "Dr. HCP-055", "spec": "Neurologist", "terr": "Mumbai", "rep": "K. Sharma", "tier": "A", "calls": 122, "sales": 90400, "lift": 54.4, "decile": "-1"}, {"name": "Dr. HCP-031", "spec": "Oncologist", "terr": "Bengaluru", "rep": "M. Patel", "tier": "A", "calls": 92, "sales": 89700, "lift": 53.2, "decile": "0"}, {"name": "Dr. HCP-028", "spec": "Pulmonologist", "terr": "Delhi", "rep": "P. Iyer", "tier": "A", "calls": 113, "sales": 89700, "lift": 53.2, "decile": "+2"}, {"name": "Dr. HCP-045", "spec": "Pulmonologist", "terr": "Chennai", "rep": "R. Nair", "tier": "A", "calls": 112, "sales": 89400, "lift": 52.7, "decile": "+1"}, {"name": "Dr. HCP-037", "spec": "Pulmonologist", "terr": "Kolkata", "rep": "S. Gupta", "tier": "A", "calls": 101, "sales": 88200, "lift": 50.7, "decile": "-1"}, {"name": "Dr. HCP-044", "spec": "Diabetologist", "terr": "Delhi", "rep": "P. Iyer", "tier": "A", "calls": 110, "sales": 87800, "lift": 50.0, "decile": "-1"}];
+
+// ── Combo Chart ──────────────────────────────────────────────────────────────
+(function(){
+  const svg = document.getElementById('combo');
+  const maxC = Math.max(...MO_CALLS);
+  const maxS = Math.max(...MO_SALES);
+  const n = MO_LABELS.length;
+  const w = 600/n;
+  let pts = '';
+  MO_CALLS.forEach((c,i)=>{
+    const h = (c/maxC)*140;
+    const x = i*w + w*0.15;
+    const bw = w*0.7;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',160-h);
+    rect.setAttribute('width',bw); rect.setAttribute('height',h);
+    rect.setAttribute('rx','3'); rect.setAttribute('fill','rgba(77,158,255,0.55)');
+    svg.appendChild(rect);
+    const cx = i*w + w/2;
+    const sy = 10 + (1 - MO_SALES[i]/maxS)*140;
+    pts += (i===0?'M':'L') + cx + ',' + sy;
+  });
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',pts); path.setAttribute('fill','none');
+  path.setAttribute('stroke','#00d4aa'); path.setAttribute('stroke-width','2.5');
+  path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round');
+  svg.appendChild(path);
+  MO_SALES.forEach((s,i)=>{
+    const cx = i*w+w/2, sy = 10+(1-s/maxS)*140;
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',cx); c.setAttribute('cy',sy); c.setAttribute('r','4');
+    c.setAttribute('fill','#0d1117'); c.setAttribute('stroke','#00d4aa'); c.setAttribute('stroke-width','1.8');
+    svg.appendChild(c);
+  });
+  const ml = document.getElementById('mo-labels');
+  MO_LABELS.forEach(l=>{ const s=document.createElement('span'); s.textContent=l; ml.appendChild(s); });
+})();
+
+// ── Territory Tier-A bars ───────────────────────────────────────────────────
+(function(){
+  const cols = ['#00d4aa','#4d9eff','#a371f7','#ffd93d','#f85149'];
+  const tb = document.getElementById('ter-bars');
+  TER_KPI.forEach((r,i)=>{
+    const sharePct = Math.round(r.Sales/MASTER.total_sales*100);
+    tb.innerHTML += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <div style="font-size:10px;color:var(--muted);width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.Territory}</div>
+      <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <div style="width:${sharePct*4}%;height:100%;background:${cols[i]};border-radius:3px"></div></div>
+      <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text);width:36px;text-align:right">${sharePct}%</div></div>`;
+  });
+})();
+
+// ── Rep Lift bars ────────────────────────────────────────────────────────────
+(function(){
+  const gradients=['linear-gradient(90deg,#00d4aa,#00b89a)','linear-gradient(90deg,#4d9eff,#3d8bff)',
+    'linear-gradient(90deg,#a371f7,#7d40e0)','linear-gradient(90deg,#ffd93d,#d4a800)',
+    'linear-gradient(90deg,#ff9a3c,#e07000)','linear-gradient(90deg,#f85149,#d93028)',
+    'rgba(200,80,80,0.5)'];
+  const maxL = Math.max(...REP_KPI.map(r=>Math.abs(r.Sales_Lift)));
+  const rr = document.getElementById('rep-rows');
+  REP_KPI.forEach((r,i)=>{
+    const w = Math.abs(r.Sales_Lift)/maxL*92;
+    const sign = r.Sales_Lift>=0?'+':'';
+    rr.innerHTML += `<div class="rep-row">
+      <div class="rep-name">${r.Rep_Name.split('.')[1]?.trim()||r.Rep_Name}</div>
+      <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${w}%;background:${gradients[i]}">
+        ${sign}${r.Sales_Lift.toFixed(1)}%</div></div>
+      <div class="rep-pct" style="color:${r.Sales_Lift>=0?'var(--green)':'var(--red)'}">${sign}${r.Sales_Lift.toFixed(1)}%</div>
+    </div>`;
+  });
+})();
+
+// ── Heatmap ──────────────────────────────────────────────────────────────────
+(function(){
+  function hc(v,mn,mx){
+    const t=(v-mn)/(mx-mn);
+    return t>0.75?'rgba(0,212,170,0.7)':t>0.5?'rgba(0,212,170,0.35)':t>0.25?'rgba(255,217,61,0.35)':'rgba(248,81,73,0.4)';
+  }
+  const reaches=HMAP_DATA.map(r=>r.reach), growths=HMAP_DATA.map(r=>r.growth),
+        adoptions=HMAP_DATA.map(r=>r.adoption), freqs=HMAP_DATA.map(r=>r.freq);
+  const tbody=document.getElementById('heatmap-body');
+  HMAP_DATA.forEach(row=>{
+    tbody.innerHTML+=`<tr>
+      <td class="row-label">${row.t}</td>
+      <td style="background:${hc(row.reach,Math.min(...reaches),Math.max(...reaches))};border-radius:4px">${row.reach}%</td>
+      <td style="background:${hc(row.growth,Math.min(...growths),Math.max(...growths))};border-radius:4px">+${row.growth}%</td>
+      <td style="background:${hc(row.adoption,Math.min(...adoptions),Math.max(...adoptions))};border-radius:4px">${row.adoption}%</td>
+      <td style="background:${hc(row.freq,Math.min(...freqs),Math.max(...freqs))};border-radius:4px">${row.freq}x</td></tr>`;
+  });
+})();
+
+// ── Scatter ──────────────────────────────────────────────────────────────────
+(function(){
+  const sc=document.getElementById('scatter');
+  const maxC=Math.max(...SCATTER_D.map(d=>d.calls)), maxS=Math.max(...SCATTER_D.map(d=>d.sales));
+  const colors=['#00d4aa','#4d9eff','#a371f7','#ffd93d','#f85149'];
+  const legend=document.getElementById('scatter-legend');
+  SCATTER_D.forEach((d,i)=>{
+    const sz=22+d.hcps/10;
+    const left=(d.calls/maxC)*88+2, bottom=(d.sales/maxS)*85+2;
+    const dot=document.createElement('div');
+    dot.className='scatter-dot';
+    dot.style.cssText=`left:${left}%;bottom:${bottom}%;width:${sz}px;height:${sz}px;background:${colors[i]};opacity:.85;`;
+    dot.title=`${d.name} | Calls: ${d.calls.toLocaleString()} | Sales: ₹${(d.sales/1e3).toFixed(0)}K | HCPs: ${d.hcps} | Reach: ${d.reach}%`;
+    sc.appendChild(dot);
+    legend.innerHTML+=`<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:${colors[i]}"></div>${d.name}</div>`;
+  });
+})();
+
+// ── HCP Table ────────────────────────────────────────────────────────────────
+let allRows=[...HCP_DATA];
+function renderTable(data){
+  const tb=document.getElementById('hcp-tbody'); tb.innerHTML='';
+  data.forEach(r=>{
+    const dv=parseInt(r.decile)||0;
+    const dc=dv>0?'dec-up':dv<0?'dec-down':'dec-same';
+    const ds=dv>0?'▲':dv<0?'▼':'─';
+    const lc=r.lift>0?'lift-pos':'lift-neg';
+    tb.innerHTML+=`<tr>
+      <td style="font-weight:600">${r.name}</td>
+      <td style="color:var(--muted)">${r.spec}</td>
+      <td>${r.terr}</td>
+      <td style="color:var(--muted)">${r.rep}</td>
+      <td><span class="badge badge-${r.tier.toLowerCase()}">${r.tier}</span></td>
+      <td style="font-family:'Space Mono',monospace">${r.calls.toLocaleString()}</td>
+      <td style="font-family:'Space Mono',monospace">₹${(r.sales/1000).toFixed(1)}K</td>
+      <td class="${lc}">${r.lift>0?'+':''}${r.lift.toFixed(1)}%</td>
+      <td class="${dc}">${ds} ${r.decile}</td></tr>`;
+  });
+}
+renderTable(allRows);
+function filterTable(v){
+  v=v.toLowerCase();
+  renderTable(allRows.filter(r=>r.name.toLowerCase().includes(v)||r.spec.toLowerCase().includes(v)||r.terr.toLowerCase().includes(v)));
+}
+</script>
+</body>
+</html>
