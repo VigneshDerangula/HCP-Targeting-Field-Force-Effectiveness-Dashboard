@@ -294,7 +294,7 @@ Every SQL query also includes an `-- Expected result:` comment with the pre-veri
 
 ## 🤝 Connect
 
-Feel free to ⭐ star this repo if you found it useful, or reach out via [LinkedIn](https://linkedin.com/in/yourprofile) for questions, collaboration, or feedback.
+Feel free to ⭐ star this repo if you found it useful, or reach out via [[LinkedIn](https://www.linkedin.com/in/vigneshderangula/)]) for questions, collaboration, or feedback.
 
 ---
 
