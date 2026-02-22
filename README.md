@@ -291,13 +291,6 @@ All 5 deliverables are powered by **one master dataset** (Python seed = 2025). T
 
 Every SQL query also includes an `-- Expected result:` comment with the pre-verified answer so you can confirm consistency without running anything.
 
----
-
-## 💼 Resume Bullet Point
-
-> *Engineered an end-to-end pharma commercial analytics solution by building a star-schema data model across 60+ HCPs, 5 territories, and 12 months of data, delivering an interactive Power BI executive dashboard with 8 visuals and 9 DAX measures that surfaced Tier A HCPs driving 80% of net revenue at 1.9× call efficiency vs Tier C — enabling data-driven field force reallocation and reducing manual KPI reporting by ~40%*
-
----
 
 ## 🤝 Connect
 
